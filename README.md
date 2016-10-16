@@ -37,4 +37,4 @@ ship help               this message
 
 ## example
 
-<img src="http://i.imgur.com/0OrZeMC.gif">
+<img src="https://github.com/ship-containers/ship/blob/master/ship.gif?raw=true">
