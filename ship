@@ -27,11 +27,11 @@ just for fun           _
 
 Usage:
 
-ship list		see all available packages
+ship list               see all available packages
 ship installed          see all installed packages
 ship update             update all Dockerfiles
 ship upgrade            rebuild all installed packages
-ship build   <package>	build a package
+ship build   <package>  build a package
 ship rebuild <package>  build a package with caches
 ship install <package>  create executable for package
 ship remove  <package>  delete image for package
