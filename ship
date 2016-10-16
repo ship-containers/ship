@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+REPO = "/opt/ship/".freeze
+
+all_packages = -> () { Dir["#{REPO}*"].map { |dir| dir[REPO.length..dir.length] } }
+installed    = -> () { `docker images | cut -d " " -f 1`.split("\n") & all_packages.call }
+update       = -> () { system "sudo sh -c 'cd #{REPO} && git pull'" }
+upgrade      = -> () { installed.each { |package| rebuild(package) } }
+
+build       = -> (package) { system "docker build -t #{package} #{REPO}#{package}/" }
+rebuild     = -> (package) { system "docker build -t #{package} #{REPO}#{package}/ --no-cache" }
+runcmd      = -> (package) { "docker run -it -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v #{ENV['HOME']}:/home/user #{package} \\$\{\@\:1\}" }
+install     = -> (package) { build.call package
+                             system "sudo sh -c \'#{%{
+echo "#!/bin/bash" > /usr/local/bin/#{package} && \
+echo "#{runcmd.call(package)}" >> /usr/local/bin/#{package} && \
+chmod +x /usr/local/bin/#{package}
+                             }}\'"
+                           }
+remove      = -> (package) { system "sudo sh -c \"docker rmi -f #{package} && rm -rf /usr/local/bin/#{package}\""}
+search      = -> (package) { all_packages.call.select { |possible| possible =~ /#{package}/ } }
+help        = -> () {        puts %{ship package manager
+just for fun           _
+   __________      ___| |
+  /          \\___/   """|
+~~~~~~ ~~ ~~~~ ~~~ ~~~~ ~~~
+
+Usage:
+
+ship list		see all available packages
+ship installed          see all installed packages
+ship update             update all Dockerfiles
+ship upgrade            rebuild all installed packages
+ship build   <package>	build a package
+ship rebuild <package>  build a package with caches
+ship install <package>  create executable for package
+ship remove  <package>  delete image for package
+ship search  <package>  find package name
+ship help
+}
+                    }
+
+case ARGV[0]
+when "list";      puts all_packages.call
+when "installed"; puts installed.call
+when "update";    update.call
+when "upgrade";   upgrade.call
+when "build";     build.call ARGV[1]
+when "rebuild";   rebuild.call ARGV[1]
+when "install";   install.call ARGV[1]
+when "remove";    remove.call ARGV[1]
+when "search";    puts search.call ARGV[1]
+when "run";       run.call  ARGV[1]
+when "help";      help.call
+else;             puts "can't ship \"#{ARGV[0]}\""
+end
