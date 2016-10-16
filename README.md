@@ -37,4 +37,4 @@ ship help               this message
 
 ## example
 
-![](http://i.imgur.com/0OrZeMC.gif)
+<img src="http://i.imgur.com/0OrZeMC.gif">
